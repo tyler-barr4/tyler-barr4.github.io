@@ -1,0 +1,483 @@
+---
+import Base from '../layouts/Base.astro';
+import Greeting from '../components/Greeting.astro';
+import A10Parked from '../components/A10Parked.astro';
+import Docking from '../components/Docking.astro';
+import ChapterPlot from '../components/home/ChapterPlot.astro';
+import { person, caseStudies, publications, flightLog, toolkit, talks, honors } from '../data/site';
+import { url } from '../lib/url';
+
+const boldMe = (s: string) => s.replace('T. Barr', '<strong class="text-ink font-semibold">T. Barr</strong>');
+const kindLabel: Record<string, string> = { talk: 'Talk', poster: 'Poster', service: 'Service', upcoming: 'Upcoming' };
+const pubTopic = (slug?: string) => caseStudies.findIndex((c) => c.slug === slug);
+// Map labels in the opening 3D shot. Each one links to the part of the page it points at.
+const pins = [
+  { anchor: 'debris', href: '#catalyst-emocat', text: 'Debris environment', sub: '19,085 objects' },
+  { anchor: 'xai', href: '#verifiable-xai', text: 'Orbital capacity', sub: '500–600 km shell' },
+  { anchor: 'rpo', href: '#adaptive-rendezvous', text: 'Rendezvous', sub: '450 km' },
+  { anchor: 'transfer', href: '#multiphase-trajectory-optimization', text: 'Transfer arcs', sub: 'three phases' },
+  { anchor: 'moon', href: '#talks', text: 'Moon', sub: 'talks & honors' },
+  { anchor: 'comet', href: '#toolkit', text: 'Comet', sub: 'toolkit' },
+];
+// Small labels in the last shot, looking back from Mars
+const farLabels = [
+  { anchor: 'far-earth', text: 'Earth', sub: 'where the work is now' },
+  { anchor: 'far-moon', text: 'Moon' },
+  { anchor: 'far-comet', text: 'Comet' },
+];
+const jobs = flightLog.filter((e) => e.kind !== 'education');
+const edu = flightLog.filter((e) => e.kind === 'education');
+---
+<Base
+  title="Tyler Barr · Spacecraft autonomy, GNC, and orbital debris research"
+  description="Tyler Barr is an aerospace engineering student at Embry-Riddle working on spacecraft guidance and control, rendezvous autonomy, orbital debris simulation, and verifiable AI."
+>
+  <Fragment slot="backdrop">
+    <div class="pointer-events-none fixed inset-0 z-0 starfield" aria-hidden="true">
+      <canvas id="scene" class="h-full w-full opacity-0 transition-opacity duration-1000 data-[ready=true]:opacity-100"></canvas>
+      <div class="scrim absolute inset-0"></div>
+    </div>
+    <nav id="scene-pins" aria-label="Map of the 3D scene" class="pointer-events-none fixed inset-0 z-20" hidden>
+      <ul>
+        {pins.map((p) => (
+          <li>
+            <a data-anchor={p.anchor} href={p.href} class="pin pointer-events-auto absolute left-0 top-0 no-underline" style="visibility:hidden">
+              <span class="pin-dot" aria-hidden="true"></span>
+              <span class="pin-text"><span class="block font-medium text-ink">{p.text}</span><span class="block text-[11px] text-ink-2">{p.sub}</span></span>
+            </a>
+          </li>
+        ))}
+        {farLabels.map((p) => (
+          <li aria-hidden="true">
+            <span data-anchor={p.anchor} data-layer="far" class="pin pin-far absolute left-0 top-0" style="visibility:hidden">
+              <span class="pin-dot" aria-hidden="true"></span>
+              <span class="pin-text"><span class="block font-medium text-ink">{p.text}</span>{p.sub && <span class="block text-[11px] text-ink-2">{p.sub}</span>}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <button id="motion-toggle" type="button" hidden aria-pressed="false" class="btn fixed bottom-4 right-4 z-40 !min-h-[40px] !py-1.5 font-mono text-xs">
+      <span data-label>Pause motion</span>
+    </button>
+  </Fragment>
+
+  <!-- Opening: the whole system -->
+  <section id="top" data-scene="overview" class="snap-sec relative flex min-h-[100svh] items-end pb-14 pt-[46svh] sm:pb-20 sm:pt-24">
+    <div class="wrap">
+      <div class="hero-card max-w-xl" data-occlude>
+        <div class="flex items-center gap-4">
+          <picture>
+            <source type="image/webp" srcset={`${url('/images/tyler-360.webp')} 360w, ${url('/images/tyler-720.webp')} 720w`} sizes="64px" />
+            <img src={url('/images/tyler-360.jpg')} width="64" height="64" alt="Tyler Barr, smiling, in a navy suit with mountains behind him" class="h-16 w-16 rounded-full object-cover ring-2 ring-line-2" fetchpriority="high" />
+          </picture>
+          <p class="font-mono text-base text-accent sm:text-lg"><Greeting /><span class="text-ink-2">, I’m</span></p>
+        </div>
+        <h1 class="display mt-4 text-6xl leading-[0.95] sm:text-8xl">Tyler Barr</h1>
+        <p class="mt-5 text-lg leading-relaxed text-ink-2 sm:text-xl">
+          <span class="text-ink">{person.headline[0]}</span> {person.headline[1]}
+        </p>
+        <p class="mt-3 text-sm text-muted">{person.role} · {person.school}</p>
+        <div class="mt-7 flex flex-wrap gap-2.5">
+          <a class="btn btn-primary" href={url(person.links.cv)} target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 13h10" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            CV <span class="sr-only">(PDF, opens in new tab)</span>
+          </a>
+          <a class="btn" href={`mailto:${person.email}`}>Email</a>
+          <a class="btn" href={person.links.github} target="_blank" rel="me noopener">GitHub</a>
+          <a class="btn" href={person.links.linkedin} target="_blank" rel="me noopener">LinkedIn</a>
+          <a class="btn" href={person.links.researchgate} target="_blank" rel="noopener">ResearchGate</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Research: one connected story -->
+  <section id="research" data-scene="research" class="snap-sec sec-pad relative" aria-labelledby="h-research">
+    <div class="wrap">
+      <div class="panel-soft max-w-3xl p-6 sm:p-8" data-occlude>
+        <p class="kicker">Research</p>
+        <h2 id="h-research" class="display mt-2 text-4xl sm:text-5xl">Autonomy that answers to physics</h2>
+        <p class="mt-5 text-lg leading-relaxed text-ink-2">
+          My projects follow one thread: how far autonomy can extend a physically grounded system before it stops earning
+          trust. I modeled the debris environment and tested whether an AI could explain those results without outrunning the
+          evidence. Then I moved to the spacecraft itself: closing on a noncooperative target, and planning the path that gets
+          it there.
+        </p>
+      </div>
+      <ol class="research-map mt-10 grid gap-3 md:grid-cols-4" aria-label="The four projects, in order">
+        {caseStudies.map((c, i) => (
+          <li class="relative">
+            <a href={`#${c.slug}`} class="map-node group block h-full rounded-xl border border-line-2 bg-deep/85 p-4 no-underline backdrop-blur hover:border-accent">
+              <span class="font-mono text-xs text-accent">{String(i + 1).padStart(2, '0')} · {c.chapter.step}</span>
+              <span class="mt-1.5 block text-lg font-semibold leading-snug text-ink">{c.title}</span>
+              {c.chapter.related?.map((r) => <span class="mt-2 block text-xs text-muted">+ {r.label}</span>)}
+            </a>
+            {i < caseStudies.length - 1 && <span class="map-arrow" aria-hidden="true"></span>}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  {caseStudies.map((c, i) => (
+    <article id={c.slug} data-scene={c.chapter.scene} class:list={['chapter snap-sec sec-pad relative', `chapter-${c.chapter.scene}`]} aria-labelledby={`h-${c.slug}`}>
+      <div class="chapter-grid wrap">
+        <div class="chapter-card panel-soft" data-occlude>
+          <p class="kicker">{String(i + 1).padStart(2, '0')} of 04 · {c.chapter.step}</p>
+          <h2 id={`h-${c.slug}`} class="chapter-title display mt-2">{c.title}</h2>
+          <p class="mt-1 text-sm text-muted">{c.where} · {c.when}</p>
+          <p class="chapter-story mt-3 text-ink-2">{c.chapter.story}</p>
+          <dl class="mt-4 grid grid-cols-2 gap-4">
+            {c.chapter.stats.map((s) => (
+              <div>
+                <dt class="sr-only">{s.label}</dt>
+                <dd>
+                  <span class="stat block">{s.value}</span>
+                  <span class="mt-1 block text-xs leading-snug text-muted" aria-hidden="true">{s.label}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          {c.chapter.related && (
+            <ul class="mt-3 space-y-1 text-sm">
+              {c.chapter.related.map((r) => <li><span class="font-medium text-ink">Related: {r.label}.</span> <span class="text-ink-2">{r.note}</span></li>)}
+            </ul>
+          )}
+          <p class="mt-3 border-l-2 border-accent/60 pl-3 text-sm italic text-ink-2">{c.chapter.next}</p>
+          <div class="mt-4 flex flex-wrap gap-2.5">
+            <a class="btn btn-primary" href={url(`/research/${c.slug}/`)}>Read the full story<span class="sr-only">: {c.title}</span> <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+        {c.chapter.scene === 'rpo' ? (
+          <aside id="play" class="chapter-side panel-soft p-4" aria-labelledby="h-play" data-occlude>
+            <div class="mb-2.5 flex flex-wrap items-baseline justify-between gap-x-3">
+              <h3 id="h-play" class="font-semibold text-ink">Try it: dock by hand</h3>
+              <span class="font-mono text-xs text-muted">8-bit, same orbit physics</span>
+            </div>
+            <Docking compact />
+            <p class="mt-2 text-xs leading-relaxed text-ink-2">
+              Arrow keys or WASD fire thrusters. Thrust at the target and orbital mechanics make you climb and drift back.
+              Dock under 0.15 m/s, or watch Autopilot and try to beat its fuel use.
+            </p>
+          </aside>
+        ) : (
+          <aside class="chapter-side chapter-plot" aria-label={`Chart for ${c.title}`} data-occlude>
+            <ChapterPlot slug={c.slug} />
+            {c.chapter.scene === 'debris' && (
+              <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 px-1 text-xs text-ink-2" aria-label="Legend for the 3D debris field">
+                <span class="text-muted">In the 3D view:</span>
+                <span><span class="legend-dot bg-[#c7bdad]"></span>Fragments</span>
+                <span><span class="legend-dot bg-[#4ddbc2]"></span>Payloads</span>
+                <span><span class="legend-dot bg-[#ff7f33]"></span>Rocket bodies</span>
+                <span class="text-muted">(illustrative mix; the count matches the study)</span>
+              </p>
+            )}
+          </aside>
+        )}
+      </div>
+    </article>
+  ))}
+
+  <!-- Publications -->
+  <section id="publications" data-scene="archive" class="snap-sec sec-pad relative" aria-labelledby="h-pubs">
+    <div class="wrap">
+      <div class="panel-soft p-6">
+        <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+          <div>
+            <p class="kicker">Publications</p>
+            <h2 id="h-pubs" class="display mt-2 text-4xl">Papers and abstracts</h2>
+          </div>
+          <p class="text-ink-2">Seven since 2025, four as first author.</p>
+        </div>
+        <ol class="mt-4 grid gap-x-8 lg:grid-cols-2">
+          {publications.map((p) => {
+            const t = pubTopic(p.topic);
+            return (
+              <li class="border-t border-line py-3">
+                <div class="flex items-baseline gap-3">
+                  <span class="font-mono text-xs text-muted">{p.year}</span>
+                  <h3 class="font-semibold leading-snug">
+                    {p.href ? <a class="hover:text-signal" href={p.href} target="_blank" rel="noopener">{p.title}</a> : p.title}
+                  </h3>
+                </div>
+                <p class="mt-1 pl-[2.6rem] text-xs text-ink-2"><span set:html={boldMe(p.authors)} /> · <span class="italic text-muted">{p.venue} · {p.status}</span></p>
+                <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 pl-[2.6rem] text-xs">
+                  {p.first && <span class="chip !border-accent/60 !text-accent-2">First author</span>}
+                  {p.href && <a class="link" href={p.href} target="_blank" rel="noopener">{p.linkLabel}<span class="sr-only"> for {p.title}</span></a>}
+                  {t >= 0 && <a class="link" href={`#${p.topic}`}>Project {t + 1}: {caseStudies[t].title}</a>}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Experience: jobs and school -->
+  <section id="experience" data-scene="flight" class="snap-sec sec-pad relative" aria-labelledby="h-exp">
+    <div class="wrap">
+      <div class="panel-soft max-w-3xl p-6 sm:p-7">
+        <p class="kicker">Experience</p>
+        <h2 id="h-exp" class="display mt-2 text-4xl">Where I’ve worked</h2>
+        <p class="mt-3 leading-relaxed text-ink-2">
+          I started in computer science and aircraft maintenance. On the flight line, you sign off on a repair only when the
+          measurements, schematics, and records support it. I hold research to the same standard, and I like to build, test,
+          break, understand, and improve ideas instead of leaving them on paper.
+        </p>
+      </div>
+      <ol class="mt-4 grid gap-4 lg:grid-cols-3">
+        {jobs.map((e) => (
+          <li class="panel-soft flex flex-col p-5">
+            <p class="font-mono text-xs text-signal">{e.when}</p>
+            <h3 class="mt-1 text-lg font-semibold leading-snug">{e.org}</h3>
+            <p class="text-sm text-ink-2">{e.title}</p>
+            <ul class="mt-3 list-disc space-y-1.5 pl-5 text-sm text-ink-2 marker:text-line-2">
+              {e.points.map((pt) => <li>{pt}</li>)}
+            </ul>
+            {e.kind === 'military' && <div class="mt-auto flex justify-end pt-2"><A10Parked /></div>}
+          </li>
+        ))}
+      </ol>
+      <div class="panel-soft mt-4 grid gap-4 p-5 sm:grid-cols-[auto_1fr_1fr] sm:items-baseline">
+        <h3 class="kicker">Education</h3>
+        {edu.map((e) => (
+          <p class="text-sm"><span class="font-medium text-ink">{e.org}</span> <span class="font-mono text-xs text-muted">{e.when}</span><br /><span class="text-ink-2">{e.title}. {e.points.join(' ')}</span></p>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Talks, service and honors: from the Moon, looking back at Earth -->
+  <section id="talks" data-scene="moon" class="snap-sec sec-pad relative" aria-labelledby="h-talks">
+    <div class="side-grid wrap">
+      <div class="panel-soft p-6 sm:p-7" data-occlude>
+        <p class="kicker">Talks &amp; service</p>
+        <h2 id="h-talks" class="display mt-2 text-3xl">Where I’ve presented</h2>
+        <ol class="talk-list mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+          {talks.map((t) => (
+            <li class="border-t border-line pt-2 text-sm">
+              <p class="flex flex-wrap items-center gap-2"><span class="font-mono text-xs text-muted">{t.when}</span><span class="chip">{kindLabel[t.kind]}</span></p>
+              <p class="mt-1 font-medium text-ink">{t.event}</p>
+              <p class="mt-0.5 text-ink-2">{t.what}</p>
+              {t.href && <a class="link mt-1 inline-block text-xs" href={t.href.startsWith('/') ? url(t.href) : t.href} target="_blank" rel="noopener">{t.linkLabel}<span class="sr-only"> for {t.event}</span></a>}
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div class="panel-soft self-start p-6 sm:p-7" data-occlude>
+        <p class="kicker">Honors</p>
+        <ul class="mt-3 space-y-2.5 text-sm text-ink-2">
+          {honors.map((h) => <li class="border-l-2 border-accent/60 pl-3">{h}</li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tools and methods: out by the comet -->
+  <section id="toolkit" data-scene="comet" class="snap-sec sec-pad relative" aria-labelledby="h-tools">
+    <div class="wrap">
+      <div class="tools-col" data-occlude>
+        <div class="panel-soft px-6 py-5">
+          <p class="kicker">Toolkit</p>
+          <h2 id="h-tools" class="display mt-2 text-3xl">Tools and methods</h2>
+          <p class="mt-2 text-ink-2">What I reach for on each kind of problem.</p>
+        </div>
+        <dl class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {toolkit.map((g) => (
+            <div class="panel-soft px-5 py-4">
+              <dt class="font-semibold text-ink">{g.domain}</dt>
+              <dd class="mt-2 flex flex-wrap gap-1.5">{g.items.map((it) => <span class="chip">{it}</span>)}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact: Mars, looking back at everything else -->
+  <section id="contact" data-scene="mars" class="snap-sec sec-pad relative" aria-labelledby="h-contact">
+    <div class="wrap">
+      <div class="panel-soft max-w-2xl p-6 sm:p-8" data-occlude>
+        <p class="kicker">Contact</p>
+        <h2 id="h-contact" class="display mt-2 text-4xl sm:text-5xl">Where I’m headed</h2>
+        <div class="mt-5 space-y-4 leading-relaxed text-ink-2">
+          <p>
+            I want to build spacecraft that make consequential decisions far from human support. Rendezvous, inspection, and
+            servicing make demanding near-term testbeds because they need the same estimation, planning, and control that
+            deep-space missions require.
+          </p>
+          <p>
+            For my Ph.D., I want to study how a spacecraft should adapt its trajectory and controller as new observations change
+            what it knows about its target, while every maneuver stays feasible. I’m also curious about reusable networks of
+            optimized transfers that could work as a transportation map for exploring the solar system.
+          </p>
+          <p>
+            Long term, I hope to carry these methods to Mars, asteroids, comets, and moons, and to the spacecraft and instruments
+            that let us investigate the universe beyond the solar system. I want to lead a lab that works in both directions
+            between aerospace engineering and space science, and to teach astrodynamics and GNC.
+          </p>
+        </div>
+        <div class="mt-7 flex flex-wrap gap-2.5">
+          <a class="btn btn-primary" href={`mailto:${person.email}`}>Email me</a>
+          <a class="btn" href={person.links.linkedin} target="_blank" rel="me noopener">LinkedIn</a>
+          <a class="btn" href={person.links.researchgate} target="_blank" rel="noopener">ResearchGate</a>
+          <a class="btn" href={person.links.github} target="_blank" rel="me noopener">GitHub</a>
+          <a class="btn" href={url(person.links.cv)} target="_blank" rel="noopener">CV (PDF)</a>
+        </div>
+        <p class="mt-4 font-mono text-xs text-muted">{person.email}</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style is:global>
+  /* Snap section to section on the homepage only: a small scroll springs back, a real one moves on. */
+  @media (min-width: 1024px) and (min-height: 640px) {
+    html:has(#top[data-scene]) { scroll-snap-type: y mandatory; scroll-padding-top: 0; }
+    html:has(#top[data-scene]) footer { scroll-snap-align: end; }
+  }
+</style>
+
+<style>
+  /* Darken only behind the text column so the 3D keeps the rest of the screen */
+  .scrim {
+    background: linear-gradient(90deg, color-mix(in oklab, var(--color-void) 72%, transparent) 0%, color-mix(in oklab, var(--color-void) 30%, transparent) 38%, transparent 55%);
+  }
+  @media (max-width: 1023px) {
+    .scrim { background: linear-gradient(180deg, transparent 0%, transparent 40%, color-mix(in oklab, var(--color-void) 55%, transparent) 100%); }
+  }
+  .panel-soft {
+    background: color-mix(in oklab, var(--color-deep) 78%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-line) 80%, transparent);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .panel-solid {
+    background: color-mix(in oklab, var(--color-deep) 94%, transparent);
+    border: 1px solid var(--color-line);
+    border-radius: 16px;
+  }
+  /* Every section is one screen. On desktop the page snaps from section to section. */
+  .sec-pad { display: flex; align-items: center; padding-block: 5.5rem 2.5rem; }
+  @media (min-width: 1024px) {
+    .snap-sec { min-height: 100svh; scroll-snap-align: start; }
+  }
+  .chapter-grid { display: grid; gap: 1rem; }
+  .chapter-card { padding: 1.5rem; }
+  .chapter-title { font-size: clamp(1.9rem, 2.6vw, 2.35rem); }
+  .chapter-story { line-height: 1.6; }
+  .chapter-plot :global(figure) {
+    background: color-mix(in oklab, var(--color-deep) 82%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  @media (min-width: 1024px) {
+    /* text card, then its chart or game right beside it; the right side of the screen is left to the 3D */
+    .chapter-grid {
+      grid-template-columns: minmax(0, 30rem) minmax(0, var(--side, 23rem)) minmax(0, 1fr);
+      gap: 1.25rem;
+      align-items: center;
+    }
+    .chapter-transfer { --side: 30rem; }
+    .chapter-rpo { --side: 21.5rem; }
+    .chapter-card { padding: 1.6rem 1.75rem; }
+    .chapter-story { font-size: 0.98rem; }
+  }
+  /* laptop screens: tighten so each chapter fits without scrolling */
+  @media (min-width: 1024px) and (max-height: 820px) {
+    .chapter.sec-pad { padding-block: 4.75rem 1.25rem; }
+    .chapter-card { padding: 1.25rem 1.5rem; }
+    .chapter-title { font-size: clamp(1.7rem, 2.3vw, 2.1rem); }
+    .chapter-story { font-size: 0.94rem; line-height: 1.55; }
+    .chapter-card :global(.stat) { font-size: 2rem; }
+  }
+  @media (max-width: 1023px) {
+    /* phones/tablets: leave the top of the screen to the 3D view, cards below */
+    .chapter { align-items: flex-end; padding-top: 50svh; }
+    #contact { align-items: flex-end; padding-top: 42svh; }
+  }
+  /* a main panel and a narrow one beside it, the 3D on the right */
+  .side-grid { display: grid; gap: 1rem; }
+  .tools-col { max-width: 60rem; }
+  @media (min-width: 1024px) {
+    .side-grid { grid-template-columns: minmax(0, 46rem) minmax(0, 20rem) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+  }
+  @media (min-width: 1024px) and (max-height: 820px) {
+    #talks.sec-pad, #toolkit.sec-pad, #publications.sec-pad, #experience.sec-pad { padding-block: 4.75rem 1.25rem; }
+    .talk-list > li { font-size: 0.8125rem; }
+    .talk-list :global(.chip) { padding-block: 0; }
+  }
+  .map-arrow { display: none; }
+  @media (min-width: 768px) {
+    .map-arrow {
+      display: block; position: absolute; top: 50%; right: -0.75rem; width: 0.75rem; height: 1px;
+      background: var(--color-accent); opacity: 0.7;
+    }
+  }
+  .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; margin-right: 6px; vertical-align: middle; }
+  .pin { display: flex; align-items: flex-start; gap: 8px; transition: opacity 0.3s; will-change: transform; }
+  .pin-dot {
+    margin-top: 4px; width: 10px; height: 10px; border-radius: 999px; flex: none;
+    border: 1.5px solid var(--color-accent); background: color-mix(in oklab, var(--color-accent) 30%, transparent);
+    box-shadow: 0 0 10px var(--color-accent); translate: -5px -9px;
+  }
+  .pin-text {
+    translate: 0 -12px; padding: 3px 8px; border-radius: 8px; font-size: 13px; line-height: 1.25;
+    background: color-mix(in oklab, var(--color-void) 70%, transparent); border: 1px solid transparent;
+  }
+  .pin:hover .pin-text, .pin:focus-visible .pin-text { border-color: var(--color-accent); }
+  /* near the right edge the label goes on the left of its dot */
+  .pin.pin-flip { flex-direction: row-reverse; translate: calc(-100% + 10px) 0; }
+  @media (max-width: 640px) { .pin-text span + span { display: none; } }
+  .pin-far { pointer-events: none; }
+  .pin-far .pin-dot { width: 7px; height: 7px; margin-top: 5px; translate: -3.5px -8px; border-color: var(--color-ink-2); background: transparent; box-shadow: none; }
+  .pin-far .pin-text { font-size: 12px; background: transparent; }
+</style>
+
+<script>
+  const canvas = document.getElementById('scene') as HTMLCanvasElement | null;
+  const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-scene]'));
+  const pinNav = document.getElementById('scene-pins');
+  const pins = Array.from(document.querySelectorAll<HTMLElement>('#scene-pins [data-anchor]'));
+  const hasWebGL = (() => {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch { return false; }
+  })();
+  const saveData = (navigator as any).connection?.saveData === true;
+  if (canvas && hasWebGL && !saveData) {
+    const boot = () =>
+      import('../scripts/scene')
+        .then((m) => {
+          if (pinNav) pinNav.hidden = false;
+          const ctl = m.initScene(canvas, sections, pins);
+          const btn = document.getElementById('motion-toggle') as HTMLButtonElement | null;
+          if (!btn || ctl.reduced) return;
+          const label = btn.querySelector('[data-label]')!;
+          const apply = (p: boolean) => {
+            ctl.setPaused(p);
+            btn.setAttribute('aria-pressed', String(p));
+            label.textContent = p ? 'Resume motion' : 'Pause motion';
+          };
+          let saved = false;
+          try { saved = localStorage.getItem('motion-paused') === '1'; } catch {}
+          apply(saved);
+          btn.hidden = false;
+          btn.addEventListener('click', () => {
+            const p = btn.getAttribute('aria-pressed') !== 'true';
+            apply(p);
+            try { localStorage.setItem('motion-paused', p ? '1' : '0'); } catch {}
+          });
+        })
+        .catch(() => { canvas.remove(); pinNav?.remove(); });
+    if ('requestIdleCallback' in window) (window as any).requestIdleCallback(boot, { timeout: 1200 });
+    else setTimeout(boot, 300);
+  } else {
+    canvas?.remove();
+    pinNav?.remove();
+  }
+</script>

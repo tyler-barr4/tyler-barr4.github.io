@@ -1,0 +1,15 @@
+---
+// Small multiples: one panel per metric, same five conditions in each, integrated mitigation highlighted.
+import Bars from './Bars.astro';
+interface Panel { title: string; rows: { label: string; value: number; display: string; highlight?: boolean }[]; max: number; refLine?: { value: number; label: string } }
+interface Props { panels: Panel[] }
+const { panels } = Astro.props;
+---
+<div class="grid gap-6 lg:grid-cols-3">
+  {panels.map((p) => (
+    <div>
+      <p class="mb-3 text-sm font-semibold text-ink">{p.title}</p>
+      <Bars rows={p.rows} max={p.max} refLine={p.refLine} />
+    </div>
+  ))}
+</div>

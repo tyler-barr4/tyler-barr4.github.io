@@ -1,0 +1,55 @@
+---
+// The one headline 2D plot shown with each research chapter on the homepage.
+// Numbers are copied from the papers; the full set of figures lives on each research page.
+import Figure from '../charts/Figure.astro';
+import Bars from '../charts/Bars.astro';
+import Dumbbell from '../charts/Dumbbell.astro';
+import PhaseSchematic from '../PhaseSchematic.astro';
+interface Props { slug: string }
+const { slug } = Astro.props;
+const conds = ['Business as usual', 'High PMD', 'Passivation', 'Integrated', 'No launch'];
+const pop = [90059, 83623, 46345, 40011, 40550];
+const fmt = (n: number) => n.toLocaleString('en-US');
+const sections = [
+  { label: 'Orbital / collision', a: 69, b: 99 },
+  { label: 'Evidence / provenance', a: 73, b: 98 },
+  { label: 'Backend interpretation', a: 82, b: 100 },
+  { label: 'Economics', a: 82, b: 99 },
+  { label: 'Cross-domain', a: 86, b: 100 },
+  { label: 'E-MOCAT / population', a: 87, b: 99 },
+  { label: 'Policy / governance', a: 93, b: 99 },
+  { label: 'Tool / scenario', a: 88, b: 91 },
+];
+---
+{slug === 'catalyst-emocat' && (
+  <Figure
+    title="Debris population after ten years, by policy"
+    source="Mean of 100 matched-seed runs per condition. Barr, Adams & Wu, AMOS 2026"
+    table={{ head: ['Condition', 'Final population'], rows: conds.map((c, i) => [c, fmt(pop[i])]) }}
+  >
+    <Bars max={100000} rows={conds.map((c, i) => ({ label: c, value: pop[i], display: fmt(pop[i]), highlight: c === 'Integrated' }))} refLine={{ value: 19085, label: 'start: 19,085' }} />
+  </Figure>
+)}
+{slug === 'verifiable-xai' && (
+  <Figure
+    title="Explanations that held up, per 100 cases, by topic"
+    source="800 held-out cases. Barr, Adams & Wu, 2026 (Macauley finalist)"
+    table={{ head: ['Topic', 'Reference', 'Adapted'], rows: sections.map((s) => [s.label, s.a, s.b]) }}
+  >
+    <Dumbbell rows={sections} min={60} max={100} aLabel="Reference model" bLabel="Adapted model" />
+  </Figure>
+)}
+{slug === 'adaptive-rendezvous' && (
+  <Figure
+    title="Mission success by controller, 25 runs each"
+    source="Sportelli, Barr, Kilic & Wu, arXiv:2607.16630"
+    table={{ head: ['Controller', 'Success rate'], rows: [['Naive MPC', '28%'], ['Fixed-parameter MPC', '60%'], ['Adaptive MPC', '72%']] }}
+  >
+    <Bars max={100} unit="%" rows={[{ label: 'Naive MPC', value: 28 }, { label: 'Fixed MPC', value: 60 }, { label: 'Adaptive MPC', value: 72, highlight: true }]} />
+  </Figure>
+)}
+{slug === 'multiphase-trajectory-optimization' && (
+  <Figure title="What the bug looked like, and the fix" source="Illustration of the method. Not Turion data.">
+    <PhaseSchematic note={false} stacked />
+  </Figure>
+)}

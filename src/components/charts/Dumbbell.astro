@@ -1,0 +1,39 @@
+---
+// Before → after per category on a shared axis. Direction is also shown with the signed change, not just color.
+interface Row { label: string; a: number; b: number }
+interface Props { rows: Row[]; min: number; max: number; aLabel: string; bLabel: string; unit?: string }
+const { rows, min, max, aLabel, bLabel, unit = '' } = Astro.props;
+const x = (v: number) => ((v - min) / (max - min)) * 100;
+const ticks = Array.from({ length: 5 }, (_, i) => min + ((max - min) * i) / 4);
+---
+<div>
+  <ul class="mb-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-2">
+    <li class="flex items-center gap-2"><span class="inline-block h-2.5 w-2.5 rounded-full border-2 border-c0 bg-deep" aria-hidden="true"></span>{aLabel}</li>
+    <li class="flex items-center gap-2"><span class="inline-block h-2.5 w-2.5 rounded-full bg-c1" aria-hidden="true"></span>{bLabel}</li>
+  </ul>
+  <ul class="space-y-1">
+    {rows.map((r) => {
+      const lo = Math.min(r.a, r.b), hi = Math.max(r.a, r.b);
+      const d = r.b - r.a;
+      return (
+        <li class="grid grid-cols-[minmax(6rem,10rem)_1fr_3.2rem] items-center gap-3 text-sm">
+          <span class="truncate text-ink-2">{r.label}</span>
+          <span class="relative h-7" tabindex="0" role="img" aria-label={`${r.label}: ${r.a}${unit} before, ${r.b}${unit} after`} data-tip={`${r.label}: ${r.a}${unit} → ${r.b}${unit} (${d >= 0 ? '+' : ''}${d})`}>
+            <span class="absolute inset-y-0 left-0 right-0 m-auto h-px bg-line" aria-hidden="true"></span>
+            <span class:list={['absolute top-1/2 h-[2px] -translate-y-1/2', d >= 0 ? 'bg-c1/70' : 'bg-c2/80']} style={`left:${x(lo)}%; width:${x(hi) - x(lo)}%`} aria-hidden="true"></span>
+            <span class="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-c0 bg-deep" style={`left:${x(r.a)}%`} aria-hidden="true"></span>
+            <span class:list={['absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-deep', d >= 0 ? 'bg-c1' : 'bg-c2']} style={`left:${x(r.b)}%`} aria-hidden="true"></span>
+          </span>
+          <span class:list={['text-right font-mono text-xs tabular-nums', d >= 0 ? 'text-ink' : 'text-accent-2']}>{d >= 0 ? '+' : '−'}{Math.abs(d)}</span>
+        </li>
+      );
+    })}
+  </ul>
+  <div class="mt-1 grid grid-cols-[minmax(6rem,10rem)_1fr_3.2rem] gap-3" aria-hidden="true">
+    <span></span>
+    <span class="relative h-4 font-mono text-[10px] text-muted">
+      {ticks.map((t) => <span class="absolute -translate-x-1/2" style={`left:${x(t)}%`}>{Math.round(t)}{unit}</span>)}
+    </span>
+    <span></span>
+  </div>
+</div>

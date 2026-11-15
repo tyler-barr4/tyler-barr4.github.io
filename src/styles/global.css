@@ -1,0 +1,305 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/jost';
+@import '@fontsource-variable/jost/wght-italic.css';
+@import '@fontsource/space-mono/400.css';
+@import '@fontsource/space-mono/700.css';
+@import '@fontsource/press-start-2p/latin-400.css';
+
+@theme {
+  /* Retro space age: Jost is a Futura-style geometric face (Futura is on the Apollo 11 plaque) */
+  --font-sans: 'Jost Variable', 'Futura', 'Century Gothic', ui-sans-serif, sans-serif;
+  --font-display: 'Jost Variable', 'Futura', 'Century Gothic', ui-sans-serif, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-pixel: 'Press Start 2P', ui-monospace, monospace;
+
+  --color-void: #07061a;
+  --color-deep: #0d0b26;
+  --color-panel: #13112f;
+  --color-line: #262357;
+  --color-line-2: #3a3678;
+  --color-ink: #f6ecdb;
+  --color-ink-2: #d9ccb6;
+  --color-muted: #aa9f8c;
+  --color-accent: #ff7a2f;
+  --color-accent-2: #ffa66b;
+  --color-signal: #4fd1bf;
+  --color-good: #5fd39a;
+
+  /* chart marks, validated for CVD separation on the deep surface (#0d0b26) */
+  --color-c1: #26a596;
+  --color-c2: #e8692a;
+  --color-c3: #9a7ae6;
+  --color-c0: #3d3a6b;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html {
+    background: var(--color-void);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+    text-rendering: optimizeLegibility;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+  body {
+    background: var(--color-void);
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--color-accent);
+    color: #140a02;
+  }
+  .display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 0.95;
+  }
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-signal);
+  }
+  .stat {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.9rem, 3vw, 2.6rem);
+    line-height: 1;
+    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+  }
+  a {
+    color: inherit;
+  }
+  a, button, [role='button'], summary {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer components {
+  /* page width: wide screens get wide margins-to-content, so panels sit out toward the edges */
+  .wrap {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 100rem;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 640px) { .wrap { padding-inline: 1.5rem; } }
+  @media (min-width: 1024px) { .wrap { padding-inline: 2.5rem; } }
+  @media (min-width: 1600px) { .wrap { padding-inline: 4rem; } }
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .panel {
+    background: color-mix(in oklab, var(--color-panel) 86%, transparent);
+    border: 1px solid var(--color-line);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .link {
+    color: var(--color-signal);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in oklab, var(--color-signal) 45%, transparent);
+    transition: text-decoration-color 0.15s;
+  }
+  .link:hover {
+    text-decoration-color: var(--color-signal);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line-2);
+    background: color-mix(in oklab, var(--color-deep) 80%, transparent);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: border-color 0.15s, background-color 0.15s, transform 0.15s;
+    text-decoration: none;
+  }
+  .btn:hover {
+    border-color: var(--color-ink-2);
+    background: var(--color-panel);
+  }
+  .btn-primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #1a0b02;
+    font-weight: 700;
+  }
+  .btn-primary:hover {
+    background: var(--color-accent-2);
+    border-color: var(--color-accent-2);
+  }
+  .btn-soon {
+    opacity: 0.75;
+    cursor: not-allowed;
+    border-style: dashed;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.9rem;
+    border: 1px solid var(--color-line-2);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-ink-2);
+    /* long chips wrap inside their card instead of running past its edge */
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .sr-only-focusable:not(:focus) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .prose-tight p + p {
+    margin-top: 0.85rem;
+  }
+}
+
+/* Charts */
+.chart-tip {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background: #0f1730;
+  border: 1px solid var(--color-line-2);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  max-width: 260px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.12s, transform 0.12s;
+}
+.chart-tip[data-show='true'] {
+  opacity: 1;
+  transform: none;
+}
+[data-tip] {
+  cursor: default;
+}
+[data-tip]:hover,
+[data-tip]:focus-visible {
+  filter: brightness(1.2);
+}
+
+/* Static starfield used on pages without WebGL, and as the WebGL fallback */
+.starfield {
+  background-color: var(--color-void);
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, #ffffffb0 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 12%, #ffffff90 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 35% 64%, #ffffffa0 50%, transparent 51%),
+    radial-gradient(1px 1px at 88% 72%, #ffffff80 50%, transparent 51%),
+    radial-gradient(1px 1px at 54% 38%, #ffffff70 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 8% 84%, #ffd9b090 50%, transparent 51%),
+    radial-gradient(1px 1px at 92% 34%, #b0d8ff90 50%, transparent 51%),
+    radial-gradient(1200px 600px at 85% -10%, #10204a55, transparent 70%),
+    radial-gradient(900px 500px at -10% 110%, #2a120855, transparent 70%);
+  background-size: 420px 420px, 380px 380px, 520px 520px, 460px 460px, 300px 300px, 610px 610px, 340px 340px, 100% 100%, 100% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .panel { border: 1px solid CanvasText; }
+  .btn { border: 1px solid ButtonText; }
+}
+
+/* A-10 easter egg */
+.a10-jet {
+  position: fixed;
+  left: 0;
+  z-index: 80;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 0 rgb(0 0 0 / 0.35));
+}
+.a10-brrrt {
+  position: fixed;
+  z-index: 79;
+  pointer-events: none;
+  font-family: var(--font-pixel);
+  font-size: clamp(14px, 2.4vw, 26px);
+  color: var(--color-accent);
+  text-shadow: 3px 3px 0 #3a1404;
+  animation: brrrt 0.9s steps(6) forwards;
+}
+@keyframes brrrt {
+  0% { opacity: 0; transform: scale(0.6); }
+  20% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: translateY(-14px) scale(1); }
+}
+.a10-puff {
+  position: fixed;
+  z-index: 78;
+  width: 10px;
+  height: 10px;
+  background: #ffd08a;
+  box-shadow: 10px 0 0 #ff9147, -10px 0 0 #ff9147, 0 -10px 0 #ffd08a, 0 10px 0 #a5521c;
+  pointer-events: none;
+  animation: puff 0.7s steps(4) forwards;
+}
+@keyframes puff {
+  0% { transform: scale(0.4); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.a10-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 90;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  background: #0f1730;
+  border: 1px solid var(--color-line-2);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}

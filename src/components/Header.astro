@@ -1,0 +1,55 @@
+---
+import { url } from '../lib/url';
+import { person } from '../data/site';
+const nav = [
+  { href: '/#research', label: 'Research' },
+  { href: '/#publications', label: 'Publications' },
+  { href: '/#experience', label: 'Experience' },
+  { href: '/#contact', label: 'Contact' },
+];
+---
+<header class="fixed inset-x-0 top-0 z-50 border-b border-line/60 bg-void/70 backdrop-blur-md">
+  <div class="wrap flex h-16 items-center justify-between gap-4">
+    <a href={url('/')} class="group flex items-center gap-3 rounded-md no-underline" aria-label="Tyler Barr, home">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="6.5" fill="#26a596" />
+        <ellipse cx="16" cy="16" rx="14" ry="5.5" fill="none" stroke="#ff7a2f" stroke-width="1.6" transform="rotate(-24 16 16)" />
+        <circle cx="28.2" cy="10.6" r="2" fill="#e9edf5" class="origin-center transition-transform group-hover:scale-125" />
+      </svg>
+      <span class="font-semibold tracking-tight">Tyler Barr</span>
+    </a>
+    <nav aria-label="Primary" class="hidden md:block">
+      <ul class="flex items-center gap-1 text-sm">
+        {nav.map((n) => (
+          <li><a class="rounded-full px-3 py-2 text-ink-2 no-underline transition-colors hover:bg-panel hover:text-ink" href={url(n.href)}>{n.label}</a></li>
+        ))}
+        <li class="ml-2"><a class="btn btn-primary !min-h-0 !py-1.5 text-sm" href={url(person.links.cv)} target="_blank" rel="noopener">CV <span class="sr-only">(PDF, opens in new tab)</span></a></li>
+      </ul>
+    </nav>
+    <button id="menu-btn" class="btn !min-h-[44px] md:hidden" aria-expanded="false" aria-controls="mobile-menu">
+      <span>Menu</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
+    </button>
+  </div>
+  <nav id="mobile-menu" aria-label="Primary (mobile)" class="hidden border-t border-line bg-void/95 md:hidden">
+    <ul class="mx-auto flex max-w-7xl flex-col px-4 py-3">
+      {nav.map((n) => (
+        <li><a class="block rounded-lg px-3 py-3 text-ink no-underline hover:bg-panel" href={url(n.href)}>{n.label}</a></li>
+      ))}
+      <li><a class="block rounded-lg px-3 py-3 font-semibold text-accent no-underline hover:bg-panel" href={url(person.links.cv)} target="_blank" rel="noopener">Download CV (PDF)</a></li>
+    </ul>
+  </nav>
+</header>
+<script>
+  const btn = document.getElementById('menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  if (btn && menu) {
+    const set = (open: boolean) => {
+      btn.setAttribute('aria-expanded', String(open));
+      menu.classList.toggle('hidden', !open);
+    };
+    btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+    menu.addEventListener('click', (e) => { if ((e.target as Element).closest('a')) set(false); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+  }
+</script>

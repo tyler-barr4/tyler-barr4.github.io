@@ -1,0 +1,26 @@
+---
+// Wrapper for every chart: numbered caption, source line, and a data table for screen readers / keyboard users.
+interface Props { n?: string; title: string; source: string; table?: { head: string[]; rows: (string | number)[][] } }
+const { n, title, source, table } = Astro.props;
+---
+<figure class="rounded-xl border border-line bg-deep/70 p-4 sm:p-6">
+  <figcaption class="mb-4">
+    {n && <span class="label">Fig. {n}</span>}
+    <span class:list={['block font-semibold text-ink', n && 'mt-1']}>{title}</span>
+  </figcaption>
+  <slot />
+  <div class="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+    <span>Source: {source}</span>
+    {table && (
+      <details class="group">
+        <summary class="cursor-pointer select-none rounded px-1 text-signal hover:underline">View data table</summary>
+        <div class="mt-2 overflow-x-auto">
+          <table class="w-full min-w-[18rem] border-collapse text-left font-mono text-xs text-ink-2">
+            <thead><tr>{table.head.map((h) => <th scope="col" class="border-b border-line-2 py-1.5 pr-4 font-medium text-ink">{h}</th>)}</tr></thead>
+            <tbody>{table.rows.map((r) => <tr>{r.map((c, i) => i === 0 ? <th scope="row" class="border-b border-line py-1.5 pr-4 font-normal">{c}</th> : <td class="border-b border-line py-1.5 pr-4 tabular-nums">{c}</td>)}</tr>)}</tbody>
+          </table>
+        </div>
+      </details>
+    )}
+  </div>
+</figure>

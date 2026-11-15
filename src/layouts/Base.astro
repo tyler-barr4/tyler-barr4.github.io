@@ -1,0 +1,54 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { url } from '../lib/url';
+
+interface Props {
+  title: string;
+  description: string;
+  path?: string;
+  starfield?: boolean;
+  /** Error pages: no canonical URL, kept out of search results. */
+  noindex?: boolean;
+}
+const { title, description, path = '/', starfield = false, noindex = false } = Astro.props;
+const canonical = new URL(url(path), Astro.site).href;
+const ogImage = new URL(url('/og.jpg'), Astro.site).href;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <meta name="theme-color" content="#07061a" />
+    <meta name="author" content="Tyler Barr" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {!noindex && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <slot name="head" />
+  </head>
+  <body class:list={[starfield && 'starfield']}>
+    <a href="#main" class="sr-only-focusable fixed left-3 top-3 z-[100] rounded-md bg-accent px-4 py-2 font-semibold text-[#170b02]">Skip to content</a>
+    <Header />
+    <slot name="backdrop" />
+    <main id="main" tabindex="-1" class="relative z-10 outline-none">
+      <slot />
+    </main>
+    <Footer />
+    <div id="sr-live" class="sr-only" aria-live="polite"></div>
+    <script>
+      import { initA10 } from '../scripts/a10';
+      import { initTooltips } from '../scripts/tooltips';
+      initA10();
+      initTooltips();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+---
+// Horizontal bars, one series. Highlighted rows use the accent mark; the rest stay neutral.
+// Value labels get their own column so bar lengths stay exactly proportional to the data.
+interface Row { label: string; value: number; display?: string; highlight?: boolean; tip?: string }
+interface Props { rows: Row[]; max: number; unit?: string; refLine?: { value: number; label: string } }
+const { rows, max, unit = '', refLine } = Astro.props;
+const pct = (v: number) => `${Math.max(0.6, (v / max) * 100)}%`;
+---
+<ul class:list={['grid grid-cols-[minmax(5.5rem,8.5rem)_minmax(0,1fr)_max-content] gap-x-3 gap-y-2.5 text-sm', refLine && 'pt-4']}>
+  {rows.map((r, i) => (
+    <li class="col-span-3 grid grid-cols-subgrid items-center">
+      <span class:list={['truncate', r.highlight ? 'font-semibold text-ink' : 'text-ink-2']}>{r.label}</span>
+      <span class="relative h-7">
+        <span
+          tabindex="0"
+          role="img"
+          aria-label={r.tip ?? `${r.label}: ${r.display ?? r.value + unit}`}
+          data-tip={r.tip ?? `${r.label}: ${r.display ?? r.value + unit}`}
+          class:list={['block h-full rounded-r-[4px] outline-offset-2', r.highlight ? 'bg-c2' : 'bg-c1/70']}
+          style={`width:${pct(r.value)}`}
+        ></span>
+        {refLine && (
+          <span class="pointer-events-none absolute -inset-y-[5px] border-l border-dashed border-ink-2/70" style={`left:${(refLine.value / max) * 100}%`} aria-hidden="true">
+            {i === 0 && <span class="absolute -top-4 left-1 whitespace-nowrap font-mono text-[10px] text-ink-2">{refLine.label}</span>}
+          </span>
+        )}
+      </span>
+      <span class="whitespace-nowrap font-mono text-xs tabular-nums text-ink">{r.display ?? `${r.value}${unit}`}</span>
+    </li>
+  ))}
+</ul>

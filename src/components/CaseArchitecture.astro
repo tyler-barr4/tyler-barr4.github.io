@@ -1,0 +1,116 @@
+---
+import ArchDiagram, { type Layer } from './ArchDiagram.astro';
+import PhaseSchematic from './PhaseSchematic.astro';
+interface Props { slug: string }
+const { slug } = Astro.props;
+
+const diagrams: Record<string, { layers: Layer[]; legend?: boolean }> = {
+  'catalyst-emocat': {
+    legend: true,
+    layers: [
+      {
+        label: 'Question to evidence',
+        stages: [
+          { title: 'Analyst question', detail: 'Policy, orbital, or economic task', tone: 'human' },
+          { title: 'Evidence packet', detail: 'Approved source clauses, run artifacts, settings', tone: 'auth' },
+          { title: 'Meowthful (adapted CWM)', detail: 'Interprets the packet, proposes bounded next steps', tone: 'ai' },
+          { title: 'Deterministic checks', detail: 'Numbers, units, citations, run IDs, parameter bounds', tone: 'auth' },
+          { title: 'Analyst review', detail: 'Accepts the answer or authorizes a new run', tone: 'human' },
+        ],
+        down: 'authorized runs only',
+      },
+      {
+        label: 'E-MOCAT physics (Python)',
+        stages: [
+          { title: 'TLE-derived initial state', detail: '19,085 objects, replayed launch traffic', tone: 'auth' },
+          { title: 'Object-resolved Monte Carlo', detail: 'Collisions, breakups, disposal, launch, decay', tone: 'auth' },
+          { title: 'Shell-level source-sink', detail: 'Fast population and governance sweeps', tone: 'auth' },
+          { title: 'Evidence store', detail: 'Config, seeds, event logs, metrics, provenance', tone: 'auth' },
+        ],
+        loop: 'stored runs feed the next evidence packet',
+      },
+    ],
+  },
+  'verifiable-xai': {
+    legend: true,
+    layers: [
+      {
+        label: 'Evidence contract',
+        stages: [
+          { title: 'Model-visible', detail: 'Task, allowed evidence, output requirements', tone: 'auth' },
+          { title: 'Never model-visible', detail: 'Protected references, required and prohibited claims, outcome criterion', tone: 'auth' },
+        ],
+        down: 'same prompt, evidence, order, and greedy decoding for both configurations',
+      },
+      {
+        label: 'Matched configurations',
+        stages: [
+          { title: 'Reference', detail: 'Base checkpoint, adapter off', tone: 'ai' },
+          { title: 'Catalyst-adapted', detail: 'Same checkpoint, LoRA adapter on', tone: 'ai' },
+          { title: 'Contrast probes', detail: 'Remove evidence, change one fact, ask a cause, add noise, repeat', tone: 'plain' },
+        ],
+        down: 'every response stored with its prompt and evidence',
+      },
+      {
+        label: 'Scoring',
+        stages: [
+          { title: 'Software checks', detail: 'Verdict, value and unit, direction, cause, uncertainty, provenance, limits', tone: 'auth' },
+          { title: 'Reviewer rubric', detail: 'Grounded, consistent, relevant, scoped, no material error', tone: 'human' },
+          { title: 'Paired statistics', detail: 'Exact McNemar, Wilson intervals', tone: 'plain' },
+        ],
+      },
+    ],
+  },
+  'adaptive-rendezvous': {
+    legend: true,
+    layers: [
+      {
+        label: 'Outer loop · supervisory layer',
+        stages: [
+          { title: 'Offline search', detail: 'Cross-entropy method over a bounded parameter set', tone: 'ai' },
+          { title: 'Online geometry rules', detail: 'Inflate separation near the Guard; step tracking weights at 500, 200, 80 m', tone: 'ai' },
+          { title: 'Parameter vector θ', detail: 'Horizons, tracking and terminal weights, keep-out weight, d_min, barrier gains', tone: 'plain' },
+        ],
+        down: 'θ only, never thrust commands',
+      },
+      {
+        label: 'Inner loop · every tick',
+        stages: [
+          { title: 'Clohessy–Wiltshire prediction', detail: 'LVLH relative motion, zero-order hold', tone: 'auth' },
+          { title: 'Convex QP (MPC)', detail: 'Receding horizon, keep-out slack, staged relaxation', tone: 'auth' },
+          { title: 'Actuator limits', detail: 'Per-axis bounds and rate limits', tone: 'auth' },
+          { title: 'Pursuer', detail: 'First control applied, then re-solve', tone: 'plain' },
+        ],
+        loop: 'state feedback, including Guard and target geometry',
+      },
+    ],
+  },
+  'multiphase-trajectory-optimization': {
+    layers: [
+      {
+        label: 'Problem setup',
+        stages: [
+          { title: 'Phase 1 … N', detail: 'Dynamics, path and boundary constraints per phase', tone: 'plain' },
+          { title: 'Frame transform', detail: 'Consistent frames before comparing any state', tone: 'auth' },
+          { title: 'Linkage constraints', detail: 'Full state equal across every boundary', tone: 'auth' },
+          { title: 'Terminal constraints', detail: 'Final rendezvous state', tone: 'auth' },
+        ],
+        down: 'one NLP',
+      },
+      {
+        label: 'Solve and verify',
+        stages: [
+          { title: 'Pseudospectral collocation', detail: 'YAPSS transcription', tone: 'plain' },
+          { title: 'IPOPT', detail: 'Interior-point NLP solver', tone: 'plain' },
+          { title: 'Diagnostics', detail: 'Which constraint failed, and by how much', tone: 'auth' },
+          { title: 'Mesh refinement · continuation · restart', detail: 'Recover hard cases from easier ones', tone: 'plain' },
+        ],
+        loop: 'repeat until converged, continuous, and explainable',
+      },
+    ],
+  },
+};
+const d = diagrams[slug];
+---
+{d && <ArchDiagram layers={d.layers} legend={d.legend} />}
+{slug === 'multiphase-trajectory-optimization' && <div class="mt-6"><PhaseSchematic /></div>}

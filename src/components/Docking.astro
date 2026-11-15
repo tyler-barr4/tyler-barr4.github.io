@@ -1,0 +1,82 @@
+---
+// 8-bit docking sim. `compact` is the small version that sits beside the rendezvous chapter on the homepage.
+interface Props { compact?: boolean }
+const { compact = false } = Astro.props;
+---
+<div class:list={['dock not-prose', compact && 'dock-compact']} data-dock>
+  <div class="dock-frame">
+    <canvas
+      tabindex="0"
+      data-game
+      width="320"
+      height="200"
+      class="block h-auto w-full"
+      aria-label="Docking game. Use arrow keys or W A S D to fire thrusters, R to reset. The game announces results below it."
+      aria-describedby="dock-help"
+    ></canvas>
+  </div>
+  <div class="dock-controls mt-3 flex flex-wrap items-center justify-between gap-3">
+    <div class="dpad" role="group" aria-label="Thrusters (press and hold)">
+      <button type="button" class="pix-btn col-start-2" data-thrust="up" aria-label="Thrust radial up">▲</button>
+      <button type="button" class="pix-btn col-start-1 row-start-2" data-thrust="left" aria-label="Thrust backward along track">◀</button>
+      <button type="button" class="pix-btn col-start-3 row-start-2" data-thrust="right" aria-label="Thrust forward along track">▶</button>
+      <button type="button" class="pix-btn col-start-2 row-start-3" data-thrust="down" aria-label="Thrust radial down">▼</button>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" class="pix-btn pix-wide" data-start>Start</button>
+      <button type="button" class="pix-btn pix-wide pix-alt" data-auto>Autopilot</button>
+      <button type="button" class="pix-btn pix-wide" data-reset>Reset</button>
+    </div>
+  </div>
+  <div class="dock-readout">
+    <p class="mt-3 font-mono text-xs text-muted">Status: <span data-status>Ready</span></p>
+    <p class="mt-1 min-h-[1.5rem] text-sm text-ink" data-result aria-live="polite"></p>
+  </div>
+  <p id="dock-help" class:list={['mt-2 text-sm text-ink-2', compact && 'sr-only']}>
+    You start 200 m behind and 25 m above the target. Hold a thruster to accelerate. The cyan dots show where you will coast
+    with no thrust, and they curve because you are in orbit: thrust toward the target and you rise and drift backward.
+    Dock at under 0.15 m/s, and enter the orange keep-out circle only through the grey corridor.
+  </p>
+</div>
+<style>
+  .dock-frame {
+    border: 4px solid #3a3678;
+    box-shadow: 0 0 0 4px #07061a, 0 0 0 6px #5b54a8;
+    border-radius: 4px;
+    background: #07061a;
+    image-rendering: pixelated;
+  }
+  .dock-frame canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+  .dock-frame:focus-within { box-shadow: 0 0 0 4px #07061a, 0 0 0 6px var(--color-signal); }
+  .dpad { display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(3, 40px); gap: 2px; touch-action: none; }
+  .pix-btn {
+    font-family: var(--font-pixel);
+    font-size: 10px;
+    min-height: 40px;
+    min-width: 44px;
+    padding: 0 10px;
+    color: #f6ecdb;
+    background: #2a2660;
+    border: 2px solid #5b54a8;
+    box-shadow: inset -3px -3px 0 #17143d, inset 3px 3px 0 #7d74d6;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+  .pix-btn:active { box-shadow: inset 3px 3px 0 #17143d; transform: translateY(1px); }
+  .pix-wide { min-width: 96px; }
+  /* compact: keyboard users don't need the on-screen d-pad, and the status lines tighten up */
+  @media (hover: hover) and (pointer: fine) { .dock-compact .dpad { display: none; } }
+  .dock-compact .dock-controls { margin-top: 0.6rem; justify-content: flex-start; }
+  .dock-compact .pix-wide { min-width: 84px; }
+  .dock-compact .pix-btn { min-height: 34px; }
+  /* status and result share one short line */
+  .dock-compact .dock-readout { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.75rem; margin-top: 0.4rem; }
+  .dock-compact .dock-readout p { margin-top: 0; }
+  .dock-compact [data-result] { min-height: 1.25rem; font-size: 0.8rem; }
+  .pix-alt { background: #7a3510; border-color: #ff7a2f; box-shadow: inset -3px -3px 0 #3e1a07, inset 3px 3px 0 #ffa66b; }
+</style>
+<script>
+  import { initDocking } from '../scripts/docking';
+  document.querySelectorAll<HTMLElement>('[data-dock]').forEach((el) => initDocking(el));
+</script>

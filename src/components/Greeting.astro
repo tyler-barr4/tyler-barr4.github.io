@@ -1,0 +1,26 @@
+---
+// Cycles Hello / Hola / こんにちは. Screen readers get a single static "Hello".
+---
+<span class="greeting inline-flex items-baseline">
+  <span class="sr-only">Hello</span>
+  <span aria-hidden="true" data-greet class="text-accent">Hello</span>
+</span>
+<script>
+  const el = document.querySelector<HTMLElement>('[data-greet]');
+  const words = ['Hello', 'Hola', 'こんにちは'];
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (el && !reduce) {
+    let i = 0;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    (async function loop() {
+      for (;;) {
+        await sleep(2600);
+        const cur = words[i];
+        for (let n = cur.length; n >= 0; n--) { el.textContent = cur.slice(0, n); await sleep(45); }
+        i = (i + 1) % words.length;
+        const next = words[i];
+        for (let n = 1; n <= next.length; n++) { el.textContent = next.slice(0, n); await sleep(90); }
+      }
+    })();
+  }
+</script>

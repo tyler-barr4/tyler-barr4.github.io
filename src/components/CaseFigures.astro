@@ -1,0 +1,135 @@
+---
+import Figure from './charts/Figure.astro';
+import Bars from './charts/Bars.astro';
+import Stacked from './charts/Stacked.astro';
+import Dumbbell from './charts/Dumbbell.astro';
+import Small from './charts/Small.astro';
+interface Props { slug: string }
+const { slug } = Astro.props;
+
+const conds = ['BAU', 'High PMD', 'Passivation', 'Integrated', 'No launch'];
+const coll = [17.56, 11.43, 11.71, 7.79, 9.05];
+const frag = [122617, 119914, 8674, 6403, 54633];
+const pop = [90059, 83623, 46345, 40011, 40550];
+const fmt = (n: number) => n.toLocaleString('en-US');
+const mk = (vals: number[], f: (n: number) => string) => vals.map((v, i) => ({ label: conds[i], value: v, display: f(v), highlight: conds[i] === 'Integrated' }));
+
+const sections = [
+  { label: 'Orbital / collision', a: 69, b: 99 },
+  { label: 'Evidence / provenance', a: 73, b: 98 },
+  { label: 'Backend interpretation', a: 82, b: 100 },
+  { label: 'Economics', a: 82, b: 99 },
+  { label: 'Cross-domain', a: 86, b: 100 },
+  { label: 'E-MOCAT / population', a: 87, b: 99 },
+  { label: 'Policy / governance', a: 93, b: 99 },
+  { label: 'Tool / scenario', a: 88, b: 91 },
+];
+---
+{slug === 'catalyst-emocat' && (
+  <div class="space-y-6">
+    <Figure
+      n="1"
+      title="Ten-year outcomes by condition, mean of 100 matched-seed runs each"
+      source="Barr, Adams & Wu, AMOS 2026, Table 3"
+      table={{ head: ['Condition', 'Collisions', 'Generated fragments', 'Final population'], rows: conds.map((c, i) => [c, coll[i], fmt(frag[i]), fmt(pop[i])]) }}
+    >
+      <Small
+        panels={[
+          { title: 'Collisions per run', rows: mk(coll, (v) => v.toFixed(2)), max: 20 },
+          { title: 'Generated fragment objects', rows: mk(frag, fmt), max: 130000 },
+          { title: 'Final population', rows: mk(pop, fmt), max: 100000, refLine: { value: 19085, label: 'initial 19,085' } },
+        ]}
+      />
+      <p class="mt-4 text-sm text-ink-2">Integrated mitigation is lowest on all three, yet the final population is still 2.096× the initial state.</p>
+    </Figure>
+    <Figure
+      n="2"
+      title="Assistant answers that met the success criteria, 800 held-out cases"
+      source="Barr, Adams & Wu, AMOS 2026; ERAU AI Day 2026 poster"
+      table={{ head: ['Configuration', 'Successful', 'Rate'], rows: [['Reference CWM (adapter off)', '660 / 800', '82.50%'], ['Catalyst-adapted CWM', '785 / 800', '98.13%']] }}
+    >
+      <Bars
+        max={100}
+        rows={[
+          { label: 'Reference', value: 82.5, display: '82.50% (660/800)' },
+          { label: 'Adapted', value: 98.13, display: '98.13% (785/800)', highlight: true },
+        ]}
+      />
+    </Figure>
+  </div>
+)}
+
+{slug === 'verifiable-xai' && (
+  <div class="space-y-6">
+    <Figure
+      n="1"
+      title="Successful responses per 100 cases, by section"
+      source="Barr, Adams & Wu, 2026 (Macauley finalist); von Braun Symposium poster"
+      table={{ head: ['Section', 'Reference', 'Adapted', 'Gain'], rows: sections.map((s) => [s.label, s.a, s.b, `+${s.b - s.a}`]) }}
+    >
+      <Dumbbell rows={sections} min={60} max={100} aLabel="Reference CWM" bLabel="Catalyst-adapted CWM" />
+    </Figure>
+    <Figure
+      n="2"
+      title="Outcome of each of the 800 cases under both configurations"
+      source="Barr, Adams & Wu, 2026"
+      table={{ head: ['Outcome', 'Cases'], rows: [['Both succeed', 652], ['Only adapted succeeds', 133], ['Only reference succeeds', 8], ['Neither succeeds', 7]] }}
+    >
+      <Stacked
+        total={800}
+        segs={[
+          { label: 'Both succeed', value: 652, color: 'c1' },
+          { label: 'Only adapted', value: 133, color: 'c3' },
+          { label: 'Only reference', value: 8, color: 'c2' },
+          { label: 'Neither', value: 7, color: 'c0' },
+        ]}
+      />
+      <p class="mt-3 text-sm text-ink-2">141 cases changed outcome: 133 improved, 8 regressed. Exact McNemar p = 2.4 × 10⁻³⁰.</p>
+    </Figure>
+    <Figure
+      n="3"
+      title="Value-and-unit correctness, 120 cases, before and after adaptation"
+      source="Barr, Adams & Wu, 2026, cross-model study"
+      table={{ head: ['Model family', 'Reference', 'Adapted'], rows: [['CWM', '89 / 120', '114 / 120'], ['Gemma', '105 / 120', '93 / 120']] }}
+    >
+      <Dumbbell rows={[{ label: 'CWM', a: 89, b: 114 }, { label: 'Gemma', a: 105, b: 93 }]} min={80} max={120} aLabel="Reference" bLabel="Adapted" />
+      <p class="mt-3 text-sm text-ink-2">The same kind of adapter helped one family and hurt another, which is why each new adapter needs its own validation.</p>
+    </Figure>
+  </div>
+)}
+
+{slug === 'adaptive-rendezvous' && (
+  <div class="space-y-6">
+    <Figure
+      n="1"
+      title="Mission success, 25 runs per controller"
+      source="Sportelli, Barr, Kilic & Wu, arXiv:2607.16630; AAS 26-896"
+      table={{ head: ['Controller', 'Success rate'], rows: [['Naive MPC', '28%'], ['Fixed-parameter MPC', '60%'], ['Adaptive MPC', '72%']] }}
+    >
+      <Bars
+        max={100}
+        unit="%"
+        rows={[
+          { label: 'Naive MPC', value: 28 },
+          { label: 'Fixed MPC', value: 60 },
+          { label: 'Adaptive MPC', value: 72, highlight: true },
+        ]}
+      />
+    </Figure>
+    <Figure
+      n="2"
+      title="Adaptive MPC over 1,000 Monte Carlo runs"
+      source="Sportelli, Barr, Kilic & Wu, arXiv:2607.16630, Fig. 3"
+      table={{ head: ['Outcome', 'Runs', 'Share'], rows: [['Success', 940, '94.0%'], ['Timeout', 44, '4.4%'], ['Guard capture', 16, '1.6%']] }}
+    >
+      <Stacked
+        total={1000}
+        segs={[
+          { label: 'Success', value: 940, color: 'c1' },
+          { label: 'Timeout', value: 44, color: 'c3' },
+          { label: 'Guard capture', value: 16, color: 'c2' },
+        ]}
+      />
+    </Figure>
+  </div>
+)}
